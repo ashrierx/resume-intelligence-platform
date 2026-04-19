@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Resume Tailoring Platform
 
-## Getting Started
+## 🚀 Overview
+This web application allows users to:
+- Upload a resume (PDF/DOCX)
+- Provide a job description or job link
+- Extract structured resume data
+- Generate a tailored resume for the role
+- Produce relevant interview questions
+- Save and manage multiple resume versions
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🧠 Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Resume parsing and structured data extraction
+- AI-powered resume tailoring
+- Job description analysis
+- Interview question generation
+- Version history and resume management
+- Authentication and user accounts
+- File upload and storage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🏗️ Tech Stack
 
-## Learn More
+### Frontend
+- Next.js (App Router)
+- React
+- TypeScript
+- ShadCN UI
 
-To learn more about Next.js, take a look at the following resources:
+### Backend
+- REST APIs (Next.js API routes)
+- Supabase (PostgreSQL + Auth)
+- Redis (caching, rate limiting, queues)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Infrastructure
+- DigitalOcean Spaces (file storage)
+- Docker (containerization)
+- AWS ECS / Fargate (deployment)
+- GitHub Actions (CI/CD)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🔐 Security Considerations
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Environment variables for all secrets
+- Input validation and sanitization
+- Rate limiting on API routes
+- Protection against prompt injection attacks
+- Secure file upload handling
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 📦 Architecture Overview
+
+Client (Next.js)
+    ↓
+API Routes (Next.js)
+    ↓
+Redis (cache / queue)
+    ↓
+Supabase (DB + Auth)
+    ↓
+File Storage (DigitalOcean Spaces)
+
+---
+
+## 🧪 Testing
+
+- Unit tests (Jest)
+- Integration tests (API routes)
+- End-to-end tests (Playwright)
+
+---
+
+## 🚀 Deployment
+
+- Dockerized application
+- CI/CD via GitHub Actions
+- Hosted on AWS ECS (Fargate)
+
+---
+
+## 🌱 Environments
+
+- Local (development)
+- Staging
+- Production
+
+Each environment uses separate:
+- Databases
+- API keys
+- Storage buckets
+
+---
+
+## 📌 Future Enhancements
+
+- Real-time resume scoring
+- AI feedback suggestions
+- Job scraping automation
+- Analytics dashboard
