@@ -12,17 +12,15 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useAuth } from "@/app/context/AuthContext";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogTitle,
-} from "../ui/alert-dialog";
-import LoginModal from "./LoginModal";
+import { useRouter } from 'next/navigation'
+import LoginModal from "./LoginCard";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 
 export default function Header() {
   const pathname = usePathname();
   const { user, openLogin, closeLogin, isLoginOpen, logout } = useAuth();
+
+  const router = useRouter();
 
   return (
     <div className="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -104,18 +102,26 @@ export default function Header() {
                     className="w-48 bg-slate-800 border-slate-700"
                   >
                     <div className="px-2 py-2">
-                      {/* <p className="text-sm font-medium text-slate-200">{user.name}</p>
-                    <p className="text-xs text-slate-500 font-mono">{user.email}</p> */}
+                      <p className="text-sm font-medium text-slate-200">
+                        {user.name}
+                      </p>
+                      <p className="text-xs text-slate-500 font-mono">
+                        {user.email}
+                      </p>
                     </div>
                     <DropdownMenuSeparator className="bg-slate-700" />
                     <DropdownMenuItem
-                      // onClick={() => navigate("/settings")}
+                      onSelect={() => router.push('/settings')}
                       className="text-slate-300 focus:bg-slate-700 focus:text-slate-100 cursor-pointer"
                     >
                       Settings
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      // onClick={handleLogout}
+                      onSelect={async () => {
+                        await logout();
+                        router.push('/');
+                        router.refresh();
+                      }}
                       className="text-red-400 focus:bg-red-950/30 focus:text-red-300 cursor-pointer"
                     >
                       Log out
