@@ -60,7 +60,7 @@ export default function LoginCard({
       }
 
       closeLogin();
-      router.push("/settings");
+      router.push("/");
     } finally {
       setIsSubmitting(false);
     }

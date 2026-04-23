@@ -13,7 +13,7 @@ import {
 } from "../ui/dropdown-menu";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from 'next/navigation'
-import LoginModal from "./LoginCard";
+import LoginCard from "./LoginCard";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 
 export default function Header() {
@@ -143,7 +143,7 @@ export default function Header() {
               <Dialog open={isLoginOpen} onOpenChange={closeLogin}>
                 <DialogContent className="bg-slate-800 border-slate-700 max-w-md">
                   <DialogTitle className="sr-only" />
-                  <LoginModal />
+                  <LoginCard />
                 </DialogContent>
               </Dialog>
             </div>

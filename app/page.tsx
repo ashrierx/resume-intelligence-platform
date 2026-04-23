@@ -6,44 +6,84 @@ import { Button } from "../components/ui/button";
 import { Textarea } from "../components/ui/textarea";
 import { Card } from "../components/ui/card";
 import { Logo } from "../components/layout/Logo";
-// import {
-//   extractResumeData,
-//   parseJobDescription,
-//   tailorResumeToJob,
-//   generateId,
-// } from "../utils/mockAnalysis";
-// import { saveToHistory } from "../utils/storage";
+import {
+  extractResumeData,
+  parseJobDescription,
+  tailorResumeToJob,
+} from "../services/resume";
+import { createClient } from "@/lib/supabase/client";
 
 export default function HomePage() {
   const [fileName, setFileName] = useState("");
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jobInput, setJobInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const supabase = createClient();
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // const file = e.target.files?.[0];
-    // if (file) {
-    //   setFileName(file.name);
-    // }
-  };
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFileName(file.name);
+      setResumeFile(file);
+      setUploadError("");
+    }
+  }
 
   const handleSubmit = async () => {
-    // if (!fileName || !jobInput.trim()) return;
-    // setIsProcessing(true);
-    // // Simulate processing delay
-    // await new Promise((resolve) => setTimeout(resolve, 2000));
-    // // Mock extraction and tailoring
-    // const resumeData = extractResumeData(fileName);
-    // const jobData = parseJobDescription(jobInput);
-    // const tailored = tailorResumeToJob(resumeData, jobData);
-    // const result = {
-    //   ...tailored,
-    //   id: generateId(),
-    //   createdAt: new Date().toISOString(),
-    //   jobTitle: jobData.title,
-    //   companyName: jobData.company,
-    // };
-    // saveToHistory(result);
-    // navigate(`/results/${result.id}`);
+    if (!resumeFile || !jobInput.trim()) return;
+    setIsProcessing(true);
+    setUploadError("");
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // Guest path — no auth, just log and continue
+    if (!user) {
+      console.log("resume added");
+      setIsProcessing(false);
+      return;
+    }
+
+    // Authenticated path
+    const bucketName =
+      process.env.NEXT_PUBLIC_SUPABASE_RESUMES_BUCKET || "resumes";
+
+    // Folder by user ID 
+    const filePath = `${user.id}/${Date.now()}-${resumeFile.name}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(filePath, resumeFile, { upsert: false });
+
+    if (uploadError) {
+      const missingBucket = /bucket not found/i.test(uploadError.message);
+      setUploadError(
+        missingBucket
+          ? `Storage bucket "${bucketName}" not found. Create it in Supabase Storage or check your env variable.`
+          : uploadError.message,
+      );
+      setIsProcessing(false);
+      return;
+    }
+
+    const { error: insertError } = await supabase.from("resumes").insert({
+      user_id: user.id,
+      file_name: resumeFile.name,
+      storage_path: filePath,
+    });
+
+    if (insertError) {
+      // Roll back the storage upload if the DB insert fails
+      await supabase.storage.from(bucketName).remove([filePath]);
+      setUploadError(`Database save failed: ${insertError.message}`);
+      setIsProcessing(false);
+      return;
+    }
+
+    // Continue to job application step...
+    setIsProcessing(false);
   };
 
   return (
@@ -67,7 +107,7 @@ export default function HomePage() {
             </p>
           </div>
         </div>
-        
+
         {/* Steps for use */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -112,7 +152,7 @@ export default function HomePage() {
             </motion.div>
           ))}
         </motion.div>
-        
+
         {/* System Instructions */}
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 space-y-3">
           <h2 className="text-sm font-mono text-emerald-400 uppercase tracking-wider">
@@ -177,7 +217,7 @@ export default function HomePage() {
                   type="file"
                   className="hidden"
                   accept=".pdf,.doc,.docx"
-                  onChange={handleFileUpload}
+                  onChange={handleFile}
                 />
               </label>
             </motion.div>
@@ -189,7 +229,7 @@ export default function HomePage() {
             </label>
             <Textarea
               placeholder="Paste job description text or URL..."
-              className="min-h-[200px] resize-none bg-slate-900/30 border-slate-600 text-slate-100 font-mono text-sm"
+              className="min-h-50 resize-none bg-slate-900/30 border-slate-600 text-slate-100 font-mono text-sm"
               value={jobInput}
               onChange={(e) => setJobInput(e.target.value)}
             />
@@ -198,12 +238,17 @@ export default function HomePage() {
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               onClick={handleSubmit}
-              disabled={!fileName || !jobInput.trim() || isProcessing}
+              disabled={!resumeFile || !jobInput.trim() || isProcessing}
               className="w-full h-12 text-base bg-emerald-600 hover:bg-emerald-700 font-mono uppercase tracking-wide"
             >
               {isProcessing ? "Processing..." : "Execute Optimization"}
             </Button>
           </motion.div>
+          {uploadError ? (
+            <p className="text-sm text-rose-400 font-mono" role="alert">
+              {uploadError}
+            </p>
+          ) : null}
         </Card>
       </motion.div>
     </div>
